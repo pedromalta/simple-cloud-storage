@@ -249,7 +249,7 @@ public class CloudStorage {
 					.setJsonFactory(jsonFactory)
 					.setServiceAccountId(getProperties().getProperty(ACCOUNT_ID_PROPERTY))
 					.setServiceAccountScopes(scopes)
-					.setServiceAccountPrivateKey(getPrivateKey());
+					.setServiceAccountPrivateKey(getPrivateKey()).build();
 
 
 			storage = new Storage.Builder(httpTransport, jsonFactory,
