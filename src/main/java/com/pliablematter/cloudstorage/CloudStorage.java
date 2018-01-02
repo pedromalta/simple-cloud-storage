@@ -205,6 +205,12 @@ public class CloudStorage {
 		return properties;
 	}
 
+	private static void setProperties(Properties properties) {
+
+		CloudStorage.properties = properties;
+
+	}
+
 	private static Storage getStorage() throws Exception {
 
 		if (storage == null) {
