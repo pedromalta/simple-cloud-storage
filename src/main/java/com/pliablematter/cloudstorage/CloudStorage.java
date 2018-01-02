@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
+import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -29,7 +31,7 @@ public class CloudStorage {
 
 	private static Properties properties;
 	private static Storage storage;
-	private static File privateKey;
+	private static PrivateKey privateKey;
 
 	private static final String PROJECT_ID_PROPERTY = "project.id";
 	private static final String APPLICATION_NAME_PROPERTY = "application.name";
@@ -206,10 +208,16 @@ public class CloudStorage {
 		return properties;
 	}
 
-	public static File getPrivateKey() throws Exception {
+	public static PrivateKey getPrivateKey() throws Exception {
 		if (privateKey == null) {
-			privateKey = new File(getProperties().getProperty(
-				PRIVATE_KEY_PATH_PROPERTY));
+
+			InputStream fileInputStream = new FileInputStream(new File(getProperties().getProperty(PRIVATE_KEY_PATH_PROPERTY)));
+
+            KeyStore keystore = KeyStore.getInstance("PKCS12");
+            keystore.load(fileInputStream, "privatekey".toCharArray());
+            privateKey = (PrivateKey)keystore.getKey("privatekey", "notasecret".toCharArray());
+			fileInputStream.close();
+
 		}
 		return privateKey;
 
@@ -219,9 +227,10 @@ public class CloudStorage {
 		CloudStorage.properties = properties;
 	}
 
-	public static void setPrivateKey(File privateKey){
+	public static void setPrivateKey(PrivateKey privateKey) {
 		CloudStorage.privateKey = privateKey;
 	}
+
 
 	private static Storage getStorage() throws Exception {
 
@@ -233,13 +242,15 @@ public class CloudStorage {
 			List<String> scopes = new ArrayList<String>();
 			scopes.add(StorageScopes.DEVSTORAGE_FULL_CONTROL);
 
+
+			
 			Credential credential = new GoogleCredential.Builder()
 					.setTransport(httpTransport)
 					.setJsonFactory(jsonFactory)
-					.setServiceAccountId(
-							getProperties().getProperty(ACCOUNT_ID_PROPERTY))
-					.setServiceAccountPrivateKeyFromP12File(getPrivateKey())
-					.setServiceAccountScopes(scopes).build();
+					.setServiceAccountId(getProperties().getProperty(ACCOUNT_ID_PROPERTY))
+					.setServiceAccountScopes(scopes)
+					.setServiceAccountPrivateKey(getPrivateKey());
+
 
 			storage = new Storage.Builder(httpTransport, jsonFactory,
 					credential).setApplicationName(
