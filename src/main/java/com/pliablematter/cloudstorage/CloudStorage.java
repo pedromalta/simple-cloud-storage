@@ -29,6 +29,7 @@ public class CloudStorage {
 
 	private static Properties properties;
 	private static Storage storage;
+	private static File privateKey;
 
 	private static final String PROJECT_ID_PROPERTY = "project.id";
 	private static final String APPLICATION_NAME_PROPERTY = "application.name";
@@ -205,8 +206,21 @@ public class CloudStorage {
 		return properties;
 	}
 
+	public static File getPrivateKey() throws Exception {
+		if (privateKey == null) {
+			privateKey = new File(getProperties().getProperty(
+				PRIVATE_KEY_PATH_PROPERTY));
+		}
+		return privateKey;
+
+	}
+
 	public static void setProperties(Properties properties) {
 		CloudStorage.properties = properties;
+	}
+
+	public static void setPrivateKey(File privateKey){
+		CloudStorage.privateKey = privateKey;
 	}
 
 	private static Storage getStorage() throws Exception {
@@ -224,9 +238,7 @@ public class CloudStorage {
 					.setJsonFactory(jsonFactory)
 					.setServiceAccountId(
 							getProperties().getProperty(ACCOUNT_ID_PROPERTY))
-					.setServiceAccountPrivateKeyFromP12File(
-							new File(getProperties().getProperty(
-									PRIVATE_KEY_PATH_PROPERTY)))
+					.setServiceAccountPrivateKeyFromP12File(getPrivateKey())
 					.setServiceAccountScopes(scopes).build();
 
 			storage = new Storage.Builder(httpTransport, jsonFactory,
