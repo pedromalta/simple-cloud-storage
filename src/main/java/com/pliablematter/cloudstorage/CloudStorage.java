@@ -44,11 +44,11 @@ public class CloudStorage {
 	 * 
 	 * @param bucketName
 	 *            Bucket where file will be uploaded
-	 * @param filePath
-	 *            Absolute path of the file to upload
+	 * @param stream
+	 *            the input stream to upload
 	 * @throws Exception
 	 */
-	public static void uploadFile(String bucketName, String filePath)
+	public static void uploadFile(String bucketName, String fileName, InputStream stream)
 			throws Exception {
 
 		Storage storage = getStorage();
@@ -56,9 +56,6 @@ public class CloudStorage {
 		StorageObject object = new StorageObject();
 		object.setBucket(bucketName);
 
-		File file = new File(filePath);
-
-		InputStream stream = new FileInputStream(file);
 		try {
 			String contentType = URLConnection
 					.guessContentTypeFromStream(stream);
@@ -67,12 +64,33 @@ public class CloudStorage {
 
 			Storage.Objects.Insert insert = storage.objects().insert(
 					bucketName, null, content);
-			insert.setName(file.getName());
+			insert.setName(fileName);
 
 			insert.execute();
 		} finally {
 			stream.close();
 		}
+	}
+
+
+		/**
+	 * Uploads a file to a bucket. Filename and content type will be based on
+	 * the original file.
+	 * 
+	 * @param bucketName
+	 *            Bucket where file will be uploaded
+	 * @param filePath
+	 *            Absolute path of the file to upload
+	 * @throws Exception
+	 */
+	public static void uploadFile(String bucketName, String filePath)
+			throws Exception {
+
+		File file = new File(filePath);
+
+		InputStream stream = new FileInputStream(file);
+
+		uploadFile(bucketName, file.getName(), stream);
 	}
 	
 	public static void downloadFile(String bucketName, String fileName, String destinationDirectory) throws Exception {
